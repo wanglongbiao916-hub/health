@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head><title>生成图标</title></head>
+<body style="background:#333;display:flex;flex-direction:column;align-items:center;padding:40px;">
+<p style="color:#fff;margin-bottom:20px;">右键点击下方图标 → "图片另存为" → 保存为 icon-192.png 和 icon-512.png</p>
+<canvas id="c1" width="192" height="192"></canvas>
+<br>
+<canvas id="c2" width="512" height="512"></canvas>
+<script>
+function drawIcon(canvas) {
+  var s = canvas.width, ctx = canvas.getContext('2d');
+  // 背景
+  var g = ctx.createLinearGradient(0, 0, s, s);
+  g.addColorStop(0, '#060b1a');
+  g.addColorStop(1, '#0c1a3a');
+  ctx.beginPath();
+  ctx.roundRect(0, 0, s, s, s * 0.22);
+  ctx.fillStyle = g;
+  ctx.fill();
+  // 外圈
+  ctx.beginPath();
+  ctx.arc(s/2, s*0.42, s*0.25, 0, Math.PI*2);
+  ctx.strokeStyle = 'rgba(0,194,255,0.3)';
+  ctx.lineWidth = s*0.015;
+  ctx.stroke();
+  // 心跳线
+  ctx.beginPath();
+  var cy = s*0.42, amp = s*0.1, w = s*0.06;
+  ctx.moveTo(s*0.15, cy);
+  ctx.lineTo(s*0.35, cy);
+  ctx.lineTo(s*0.40, cy - amp);
+  ctx.lineTo(s*0.45, cy + amp*0.8);
+  ctx.lineTo(s*0.50, cy - amp*1.3);
+  ctx.lineTo(s*0.55, cy + amp);
+  ctx.lineTo(s*0.60, cy);
+  ctx.lineTo(s*0.85, cy);
+  ctx.strokeStyle = '#00c2ff';
+  ctx.lineWidth = s*0.025;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+  // 发光效果
+  ctx.shadowColor = '#00c2ff';
+  ctx.shadowBlur = s*0.05;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+  // 文字 "标哥"
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold ' + (s*0.14) + 'px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('标哥', s/2, s*0.72);
+  // 副标题
+  ctx.fillStyle = 'rgba(0,194,255,0.7)';
+  ctx.font = (s*0.065) + 'px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillText('HEALTH', s/2, s*0.84);
+  // 小点装饰
+  ctx.fillStyle = '#00c2ff';
+  ctx.beginPath(); ctx.arc(s*0.2, s*0.15, s*0.01, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(s*0.8, s*0.25, s*0.008, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(s*0.75, s*0.85, s*0.012, 0, Math.PI*2); ctx.fill();
+  // 导出
+  var img = new Image();
+  img.src = canvas.toDataURL('image/png');
+  img.style.cssText = 'margin:10px;border:1px solid #555;border-radius:' + (s*0.22) + 'px;';
+  canvas.parentNode.insertBefore(img, canvas.nextSibling);
+}
+drawIcon(document.getElementById('c1'));
+drawIcon(document.getElementById('c2'));
+</script>
+</body>
+</html>
