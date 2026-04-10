@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#060b1a">
+<link rel="manifest" href="manifest.json">
+<title>标哥的健康计划</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{--bg:#060b1a;--card:#0c1429;--border:rgba(0,194,255,0.12);--cyan:#00c2ff;--cyan2:#00e5ff;--red:#ff4757;--warn:#ffb142;--green:#2ed573;--purple:#a855f7;--text:#e0e8f0;--text2:rgba(224,232,240,0.5);}
+body{font-family:-apple-system,"SF Pro Display","Microsoft YaHei","PingFang SC",sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+.app{max-width:430px;margin:0 auto;min-height:100vh;position:relative;overflow:hidden;padding-top:env(safe-area-inset-top);}
+
+/* ===== 封面 ===== */
+.cover-page{width:100%;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;text-align:center;padding:0 24px;}
+.cover-page.hidden{display:none;}
+.bg-orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:0.15;animation:orbF 8s ease-in-out infinite;}
+.orb1{width:300px;height:300px;background:#00c2ff;top:-50px;left:-50px;}
+.orb2{width:250px;height:250px;background:#a855f7;bottom:-50px;right:-50px;animation-delay:4s;}
+@keyframes orbF{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(30px,-30px) scale(1.1);}}
+.grid-bg{position:absolute;top:0;left:0;width:100%;height:100%;background-image:linear-gradient(rgba(0,194,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,194,255,0.03) 1px,transparent 1px);background-size:50px 50px;}
+.scanline{position:absolute;top:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,transparent,rgba(0,194,255,0.4),transparent);animation:scan 4s linear infinite;z-index:1;}
+@keyframes scan{0%{top:-2px;}100%{top:100%;}}
+.cv-content{position:relative;z-index:2;}
+.pulse-ring{width:120px;height:120px;margin:0 auto 20px;position:relative;display:flex;align-items:center;justify-content:center;}
+.pulse-ring::before{content:'';position:absolute;width:140px;height:140px;border-radius:50%;border:1px solid rgba(0,194,255,0.2);animation:rot 10s linear infinite;}
+@keyframes rot{to{transform:rotate(360deg);}}
+.ring-inner{width:110px;height:110px;border-radius:50%;border:2px solid rgba(0,194,255,0.4);display:flex;align-items:center;justify-content:center;animation:pls 2s ease-in-out infinite;}
+@keyframes pls{0%,100%{box-shadow:0 0 20px rgba(0,194,255,0.2);}50%{box-shadow:0 0 50px rgba(0,194,255,0.4);}}
+.heart{font-size:44px;animation:hb 1.2s ease-in-out infinite;}
+@keyframes hb{0%,100%{transform:scale(1);}15%{transform:scale(1.15);}30%{transform:scale(1);}45%{transform:scale(1.1);}60%{transform:scale(1);}}
+.cv-title{font-size:26px;font-weight:800;color:#fff;letter-spacing:3px;margin-bottom:4px;text-shadow:0 0 30px rgba(0,194,255,0.3);}
+.cv-sub{font-size:11px;color:rgba(0,194,255,0.7);letter-spacing:6px;margin-bottom:24px;}
+.data-row{display:flex;gap:8px;margin-bottom:20px;justify-content:center;flex-wrap:wrap;}
+.d-card{background:rgba(0,194,255,0.06);border:1px solid rgba(0,194,255,0.15);border-radius:12px;padding:10px 14px;min-width:75px;}
+.d-card .dv{font-size:18px;font-weight:800;color:#00c2ff;}.d-card .dl{font-size:8px;color:rgba(255,255,255,0.4);margin-top:2px;}
+.tags{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-bottom:24px;}
+.stag{padding:3px 8px;border-radius:14px;font-size:9px;border:1px solid;}
+.stag.alert{color:#ff4757;border-color:rgba(255,71,87,0.25);background:rgba(255,71,87,0.06);}
+.stag.warn{color:#ffb142;border-color:rgba(255,177,66,0.25);background:rgba(255,177,66,0.06);}
+.stag.ok{color:#2ed573;border-color:rgba(46,213,115,0.25);background:rgba(46,213,115,0.06);}
+.enter-btn{padding:14px 48px;border:2px solid rgba(0,194,255,0.4);border-radius:28px;background:rgba(0,194,255,0.05);color:#00c2ff;font-size:14px;font-weight:700;letter-spacing:5px;cursor:pointer;transition:all .3s;}
+.enter-btn:active{background:rgba(0,194,255,0.15);transform:scale(0.97);}
+
+/* ===== 登录 ===== */
+.login-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(6,11,26,0.95);z-index:300;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);}
+.login-overlay.hidden{display:none;}
+.login-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px 24px;width:300px;text-align:center;position:relative;overflow:hidden;}
+.login-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);}
+.lb-icon{font-size:44px;margin-bottom:10px;}
+.login-box h3{font-size:15px;color:var(--cyan);margin-bottom:3px;}
+.lb-sub{font-size:10px;color:var(--text2);margin-bottom:16px;}
+.login-input{width:100%;padding:11px 14px;border-radius:11px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:#fff;font-size:14px;text-align:center;outline:none;}
+.login-input:focus{border-color:var(--cyan);}
+.login-btn{width:100%;padding:11px;border-radius:11px;border:1px solid rgba(0,194,255,0.4);background:rgba(0,194,255,0.08);color:var(--cyan);font-size:13px;font-weight:600;cursor:pointer;margin-top:10px;}
+.login-btn:active{background:rgba(0,194,255,0.2);}
+.login-err{font-size:10px;color:var(--red);margin-top:6px;min-height:14px;}
+.login-skip{font-size:10px;color:var(--text2);margin-top:12px;cursor:pointer;}
+
+/* ===== 主界面通用 ===== */
+.main-app{display:none;}
+.main-app.show{display:block;}
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(6,11,26,0.95);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;z-index:100;padding:6px 0 env(safe-area-inset-bottom,8px);}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:7px 0;cursor:pointer;position:relative;}
+.nav-item .icon{font-size:18px;margin-bottom:1px;}.nav-item .label{font-size:8px;color:var(--text2);}
+.nav-item.active .icon{filter:drop-shadow(0 0 8px var(--cyan));}.nav-item.active .label{color:var(--cyan);}
+.nav-item.active::before{content:'';position:absolute;top:-1px;left:30%;right:30%;height:2px;background:var(--cyan);border-radius:0 0 2px 2px;}
+
+.page{display:none;padding:14px 14px 85px;animation:fadeIn .3s ease;}.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.top-bar{padding:10px 0 14px;display:flex;justify-content:space-between;align-items:center;}
+.top-bar h2{font-size:16px;font-weight:700;background:linear-gradient(135deg,var(--cyan),var(--cyan2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.top-bar .date{font-size:10px;color:var(--text2);}
+.admin-badge{display:inline-block;padding:2px 6px;border-radius:6px;font-size:8px;background:rgba(0,194,255,0.1);color:var(--cyan);border:1px solid rgba(0,194,255,0.2);}
+.viewer-badge{display:inline-block;padding:2px 6px;border-radius:6px;font-size:8px;background:rgba(255,255,255,0.05);color:var(--text2);border:1px solid rgba(255,255,255,0.1);}
+.logout-btn{font-size:9px;color:var(--text2);cursor:pointer;padding:3px 6px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);background:transparent;}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,194,255,0.3),transparent);}
+.card-title{font-size:12px;font-weight:600;color:var(--cyan);margin-bottom:10px;display:flex;align-items:center;gap:5px;}
+
+.score-ring{width:120px;height:120px;margin:0 auto 12px;position:relative;}
+.score-ring svg{width:100%;height:100%;transform:rotate(-90deg);}
+.score-ring .bg{fill:none;stroke:rgba(0,194,255,0.08);stroke-width:8;}
+.score-ring .progress{fill:none;stroke:url(#scoreGrad);stroke-width:8;stroke-linecap:round;stroke-dasharray:345;stroke-dashoffset:345;transition:stroke-dashoffset 1.5s ease;}
+.score-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;}
+.score-num{font-size:32px;font-weight:800;background:linear-gradient(135deg,var(--cyan),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.score-label{font-size:9px;color:var(--text2);}
+
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.metric{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px;}
+.metric .m-label{font-size:9px;color:var(--text2);margin-bottom:3px;}
+.metric .m-val{font-size:18px;font-weight:700;color:#fff;}
+.metric .m-tag{display:inline-block;font-size:8px;padding:2px 5px;border-radius:6px;margin-top:3px;}
+.metric.red .m-tag{background:rgba(255,71,87,0.12);color:var(--red);border:1px solid rgba(255,71,87,0.2);}
+.metric.warn .m-tag{background:rgba(255,177,66,0.1);color:var(--warn);border:1px solid rgba(255,177,66,0.2);}
+
+.progress-bar{height:5px;background:rgba(255,255,255,0.05);border-radius:3px;overflow:hidden;margin:6px 0;}
+.progress-fill{height:100%;border-radius:3px;transition:width 1s ease;background:linear-gradient(90deg,var(--cyan),var(--green));}
+
+.alert-banner{background:linear-gradient(135deg,rgba(255,71,87,0.1),rgba(255,177,66,0.08));border:1px solid rgba(255,71,87,0.15);border-radius:10px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;gap:8px;font-size:10px;color:rgba(255,255,255,0.7);line-height:1.6;}
+.alert-banner .alert-icon{font-size:20px;flex-shrink:0;}
+</style>
+</head>
+<body>
+<div class="app">
+<!-- ===== 封面页 ===== -->
+<div class="cover-page" id="coverPage">
+<div class="bg-orb orb1"></div><div class="bg-orb orb2"></div>
+<div class="grid-bg"></div><div class="scanline"></div>
+<div class="cv-content">
+<div class="pulse-ring"><div class="ring-inner"><span class="heart">🫀</span></div></div>
+<div class="cv-title">标哥的健康计划</div>
+<div class="cv-sub">HEALTH GUARDIAN</div>
+<div class="data-row">
+<div class="d-card"><div class="dv">79.9</div><div class="dl">体重 kg</div></div>
+<div class="d-card"><div class="dv">29.9</div><div class="dl">BMI</div></div>
+<div class="d-card"><div class="dv">136/78</div><div class="dl">血压</div></div>
+<div class="d-card"><div class="dv">62</div><div class="dl">心率</div></div>
+</div>
+<div class="tags">
+<span class="stag alert">● 中度脂肪肝</span><span class="stag alert">● 高甘油三酯</span><span class="stag alert">● 吸烟者</span>
+<span class="stag warn">● 高尿酸</span><span class="stag warn">● 肾结石6mm</span><span class="stag warn">● 甲状腺抗体↑</span>
+<span class="stag ok">● 血糖正常</span><span class="stag ok">● 甲功正常</span>
+</div>
+<button class="enter-btn" onclick="enterApp()">进 入 系 统</button>
+</div>
+</div>
+
+<!-- ===== 登录浮层 ===== -->
+<div class="login-overlay hidden" id="loginOverlay">
+<div class="login-box">
+<div class="lb-icon">🔐</div>
+<h3>标哥的健康计划</h3>
+<div class="lb-sub">输入密码登录管理模式</div>
+<input class="login-input" id="loginPwd" type="password" placeholder="请输入管理密码" onkeydown="if(event.key==='Enter')doLogin()">
+<button class="login-btn" onclick="doLogin()">🔓 登录管理</button>
+<div class="login-err" id="loginErr"></div>
+<div class="login-skip" onclick="skipLogin()">👀 我只是来看看（访客模式）</div>
+</div>
+</div>
+
+<!-- ===== 主应用 ===== -->
+<div class="main-app" id="mainApp">
+<svg style="position:absolute;width:0;height:0;"><defs><linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#00c2ff"/><stop offset="100%" style="stop-color:#2ed573"/></linearGradient></defs></svg>
+
+<!-- 首页 -->
+<div class="page active" id="page-home">
+<div class="top-bar">
+<div><h2>⚡ 标哥的健康计划</h2></div>
+<div style="display:flex;align-items:center;gap:4px;">
+<span class="date" id="todayDate"></span>
+<span id="roleBadge"></span>
+<button class="logout-btn" id="logoutBtn" style="display:none;" onclick="doLogout()">退出</button>
+</div>
+</div>
+<div class="alert-banner"><span class="alert-icon">🚨</span><div>你有 <b style="color:var(--red)">8项异常指标</b>，核心问题是<b style="color:var(--warn)">肥胖(BMI 29.9)</b>。减重是关键！</div></div>
+
+<div class="card">
+<div class="card-title">📊 综合健康评分</div>
+<div class="score-ring">
+<svg viewBox="0 0 120 120"><circle class="bg" cx="60" cy="60" r="55"/><circle class="progress" id="scoreCircle" cx="60" cy="60" r="55"/></svg>
+<div class="score-center"><div class="score-num" id="scoreNum">0</div><div class="score-label">需要改善</div></div>
+</div>
+<div style="display:flex;justify-content:space-around;font-size:9px;color:var(--text2);">
+<span>🔴 严重4项</span><span>🟡 偏高4项</span><span>🟢 正常若干</span>
+</div>
+</div>
+
+<div class="card-title" style="padding:0 4px;margin-bottom:6px;font-size:11px;">⚠️ 重点关注指标</div>
+<div class="metrics">
+<div class="metric red"><div class="m-label">甘油三酯 TG</div><div class="m-val">3.53</div><div class="m-tag">超标2倍</div></div>
+<div class="metric red"><div class="m-label">GGT 转移酶</div><div class="m-val">114</div><div class="m-tag">超标近2倍</div></div>
+<div class="metric red"><div class="m-label">ALT 转氨酶</div><div class="m-val">84.6</div><div class="m-tag">偏高</div></div>
+<div class="metric red"><div class="m-label">TPOAb 抗体</div><div class="m-val">92.22</div><div class="m-tag">超标16倍</div></div>
+<div class="metric warn"><div class="m-label">总胆固醇 TC</div><div class="m-val">5.68</div><div class="m-tag">偏高</div></div>
+<div class="metric warn"><div class="m-label">尿酸 UA</div><div class="m-val">427</div><div class="m-tag">偏高</div></div>
+</div>
+
+<div class="card">
+<div class="card-title">🎯 减重进度（目标: 68-70kg）</div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px;">
+<span style="font-size:22px;font-weight:700;color:#fff;" id="currentWeight">79.9 kg</span>
+<span style="font-size:10px;color:var(--text2);">还需减 <b style="color:var(--cyan)" id="weightLeft">~10kg</b></span>
+</div>
+<div class="progress-bar"><div class="progress-fill" id="weightBar" style="width:8%;"></div></div>
+<div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text2);margin-top:3px;">
+<span>起点79.9</span><span>1月77</span><span>3月72</span><span>目标68</span>
+</div>
+</div>
+
+<!-- 戒烟 -->
+<div class="card" style="background:linear-gradient(135deg,rgba(255,71,87,0.06),rgba(168,85,247,0.06));border-color:rgba(255,71,87,0.12);">
+<div style="text-align:center;">
+<div style="font-size:10px;color:var(--text2);margin-bottom:4px;">🚭 戒烟进度</div>
+<div id="smokeDays" style="font-size:42px;font-weight:800;background:linear-gradient(135deg,var(--red),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;">0</div>
+<div style="font-size:11px;color:var(--text2);margin-top:2px;">天没抽烟</div>
+<div style="display:flex;justify-content:center;gap:16px;margin-top:10px;">
+<div style="text-align:center;"><div style="font-size:16px;font-weight:700;color:var(--green);" id="smokeMoney">¥0</div><div style="font-size:9px;color:var(--text2);">省下的钱</div></div>
+<div style="text-align:center;"><div style="font-size:16px;font-weight:700;color:var(--green);" id="smokeLife">0h</div><div style="font-size:9px;color:var(--text2);">多活时间</div></div>
+<div style="text-align:center;"><div style="font-size:16px;font-weight:700;color:var(--green);" id="smokeCigs">0</div><div style="font-size:9px;color:var(--text2);">少抽的烟</div></div>
+</div>
+<div id="smokeBtns" style="display:none;margin-top:10px;display:flex;gap:6px;justify-content:center;">
+<button onclick="showSmokeModal('setdate')" style="padding:6px 12px;border-radius:16px;border:1px solid rgba(0,194,255,0.3);background:transparent;color:var(--cyan);font-size:10px;cursor:pointer;">📅 设置戒烟日</button>
+<button onclick="showSmokeModal('relapse')" style="padding:6px 12px;border-radius:16px;border:1px solid rgba(255,71,87,0.3);background:transparent;color:var(--red);font-size:10px;cursor:pointer;">😔 破戒了</button>
+</div>
+<div style="margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.05);">
+<div style="font-size:9px;color:var(--text2);margin-bottom:4px;">🏆 里程碑</div>
+<div id="smokeBadges" style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;"></div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- 打卡页 -->
+<div class="page" id="page-checkin">
+<div class="top-bar"><h2>✅ 每日打卡</h2><div class="date" id="streakInfo">连续打卡 0 天</div></div>
+<div id="readonlyNotice" style="display:none;text-align:center;padding:8px;margin-bottom:8px;font-size:10px;color:var(--warn);background:rgba(255,177,66,0.06);border:1px solid rgba(255,177,66,0.15);border-radius:8px;">👀 访客模式，仅可查看</div>
+<div class="card">
+<div class="card-title">🏃 今日任务</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;" id="checkinGrid">
+<div class="checkin-item" data-key="wakeup" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center;cursor:pointer;position:relative;"><div style="font-size:24px;margin-bottom:4px;">⏰</div><div style="font-size:11px;color:var(--text);">7点起床</div><div style="font-size:9px;color:var(--text2);">规律作息</div></div>
+<div class="checkin-item" data-key="exercise" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center;cursor:pointer;position:relative;"><div style="font-size:24px;margin-bottom:4px;">🏃</div><div style="font-size:11px;color:var(--text);">有氧运动</div><div style="font-size:9px;color:var(--text2);">40-60分钟</div></div>
+<div class="checkin-item" data-key="diet" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center;cursor:pointer;position:relative;"><div style="font-size:24px;margin-bottom:4px;">🥗</div><div style="font-size:11px;color:var(--text);">健康饮食</div><div style="font-size:9px;color:var(--text2);">低脂低糖</div></div>
+<div class="checkin-item" data-key="water" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center;cursor:pointer;position:relative;"><div style="font-size:24px;margin-bottom:4px;">💧</div><div style="font-size:11px;color:var(--text);">喝水2500ml</div><div style="font-size:9px;color:var(--text2);">排尿酸</div></div>
+<div class="checkin-item" data-key="nosmoke" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center;cursor:pointer;position:relative;"><div style="font-size:24px;margin-bottom:4px;">🚭</div><div style="font-size:11px;color:var(--text);">今日未吸烟</div><div style="font-size:9px;color:var(--text2);">护肝护心</div></div>
+<div class="checkin-item" data-key="sleep" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center;cursor:pointer;position:relative;"><div style="font-size:24px;margin-bottom:4px;">😴</div><div style="font-size:11px;color:var(--text);">23点前入睡</div><div style="font-size:9px;color:var(--text2);">肝脏修复</div></div>
+<div class="checkin-item" data-key="neck" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center;cursor:pointer;position:relative;"><div style="font-size:24px;margin-bottom:4px;">🧘</div><div style="font-size:11px;color:var(--text);">颈椎拉伸</div><div style="font-size:9px;color:var(--text2);">10分钟</div></div>
+<div class="checkin-item" data-key="noalcohol" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center;cursor:pointer;position:relative;"><div style="font-size:24px;margin-bottom:4px;">🚫</div><div style="font-size:11px;color:var(--text);">今日未饮酒</div><div style="font-size:9px;color:var(--text2);">严格戒酒</div></div>
+</div>
+</div>
+<div class="card">
+<div class="card-title">💧 饮水追踪（目标2500ml）</div>
+<div style="display:flex;align-items:center;gap:10px;">
+<div id="waterCups" style="display:flex;gap:5px;flex-wrap:wrap;flex:1;"></div>
+<div style="font-size:10px;color:var(--text2);min-width:55px;text-align:right;"><span id="waterAmt" style="color:var(--cyan);font-weight:700;font-size:14px;display:block;">0</span>ml/2500ml</div>
+</div>
+<div class="progress-bar"><div class="progress-fill" id="waterBar" style="width:0%;"></div></div>
+</div>
+<div class="card">
+<div class="card-title">⏰ 今日提醒</div>
+<div style="font-size:11px;color:var(--text2);line-height:2.2;">
+<div style="display:flex;gap:10px;"><span style="min-width:42px;font-weight:700;color:var(--cyan);">7:00</span><span>⏰ 起床，喝300ml温水</span></div>
+<div style="display:flex;gap:10px;"><span style="min-width:42px;font-weight:700;color:var(--cyan);">7:15</span><span>🍳 早餐</span></div>
+<div style="display:flex;gap:10px;"><span style="min-width:42px;font-weight:700;color:var(--cyan);">10:00</span><span>加餐 + 起身活动</span></div>
+<div style="display:flex;gap:10px;"><span style="min-width:42px;font-weight:700;color:var(--cyan);">12:00</span><span>午餐（七分饱）→ 散步15分钟</span></div>
+<div style="display:flex;gap:10px;"><span style="min-width:42px;font-weight:700;color:var(--cyan);">15:30</span><span>加餐 + 起身活动</span></div>
+<div style="display:flex;gap:10px;"><span style="min-width:42px;font-weight:700;color:var(--cyan);">18:00</span><span>晚餐（六分饱）20:00后禁食</span></div>
+<div style="display:flex;gap:10px;"><span style="min-width:42px;font-weight:700;color:var(--cyan);">19:00</span><span>🏃 运动40-60分钟</span></div>
+<div style="display:flex;gap:10px;"><span style="min-width:42px;font-weight:700;color:var(--cyan);">22:00</span><span>🏠 到家洗漱</span></div>
+<div style="display:flex;gap:10px;"><span style="min-width:42px;font-weight:700;color:var(--cyan);">22:30</span><span>🧘 颈椎拉伸10分钟</span></div>
+<div style="display:flex;gap:10px;"><span style="min-width:42px;font-weight:700;color:var(--cyan);">23:00</span><span>😴 入睡</span></div>
+</div>
+</div>
+</div>
+
+<!-- 方案页 -->
+<div class="page" id="page-plan">
+<div class="top-bar"><h2>📋 健康方案</h2><div class="date">基于体检数据定制</div></div>
+<div class="card"><div class="card-title">🚫 绝对禁忌</div><div style="display:flex;flex-wrap:wrap;gap:6px;"><span style="padding:5px 10px;border-radius:16px;font-size:10px;background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.15);color:rgba(255,255,255,0.7);">🍺 酒精</span><span style="padding:5px 10px;border-radius:16px;font-size:10px;background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.15);color:rgba(255,255,255,0.7);">🚬 香烟</span><span style="padding:5px 10px;border-radius:16px;font-size:10px;background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.15);color:rgba(255,255,255,0.7);">🦐 海鲜内脏</span><span style="padding:5px 10px;border-radius:16px;font-size:10px;background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.15);color:rgba(255,255,255,0.7);">🍟 油炸</span><span style="padding:5px 10px;border-radius:16px;font-size:10px;background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.15);color:rgba(255,255,255,0.7);">🥬 菠菜竹笋</span><span style="padding:5px 10px;border-radius:16px;font-size:10px;background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.15);color:rgba(255,255,255,0.7);">🧋 含糖饮料</span><span style="padding:5px 10px;border-radius:16px;font-size:10px;background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.15);color:rgba(255,255,255,0.7);">🥩 肥肉</span></div></div>
+<div class="card"><div class="card-title">🍽️ 饮食方案</div>
+<div style="background:var(--card);border-left:3px solid var(--cyan);border-radius:0 10px 10px 0;padding:10px 12px;margin-bottom:6px;"><div style="font-size:11px;color:var(--cyan);margin-bottom:3px;">🌅 早餐 7:00</div><div style="font-size:10px;color:var(--text2);line-height:1.8;">全麦面包+水煮蛋+脱脂牛奶 / 杂粮粥+水煮蛋+凉拌木耳</div></div>
+<div style="background:var(--card);border-left:3px solid var(--cyan);border-radius:0 10px 10px 0;padding:10px 12px;margin-bottom:6px;"><div style="font-size:11px;color:var(--cyan);margin-bottom:3px;">☀️ 午餐 12:00</div><div style="font-size:10px;color:var(--text2);line-height:1.8;">糙米饭+清蒸鸡胸肉+炒西兰花 / 荞麦面+水煮牛肉+凉拌黄瓜<br>⚠️ 七分饱</div></div>
+<div style="background:var(--card);border-left:3px solid var(--cyan);border-radius:0 10px 10px 0;padding:10px 12px;margin-bottom:6px;"><div style="font-size:11px;color:var(--cyan);margin-bottom:3px;">🌙 晚餐 18:00</div><div style="font-size:10px;color:var(--text2);line-height:1.8;">红薯+清炒时蔬+豆腐汤 / 玉米+清炒芹菜+白萝卜汤<br>⚠️ 六分饱，20:00后禁食</div></div>
+</div>
+<div class="card"><div class="card-title">🏃 运动方案</div>
+<div style="font-size:10px;color:var(--text2);line-height:2;">
+<div style="background:var(--card);border-left:3px solid var(--green);border-radius:0 10px 10px 0;padding:8px 10px;margin-bottom:4px;"><b style="color:var(--green);">总原则:</b> 每周5次·每次40-60分钟·心率120-140</div>
+<div style="padding:3px 0;">周一: 快走40分钟 | 周二: 骑车40分钟</div>
+<div style="padding:3px 0;">周三: 快走40分钟+颈椎操 | 周四: 休息</div>
+<div style="padding:3px 0;">周五: 快走40分钟+颈椎操 | 周六: 游泳⭐</div>
+<div style="padding:3px 0;">周日: 快走+慢跑50分钟</div>
+</div></div>
+<div class="card"><div class="card-title">🚭 戒烟方案</div><div style="font-size:10px;color:var(--text2);line-height:1.9;">
+<div style="background:var(--card);border-left:3px solid var(--red);border-radius:0 10px 10px 0;padding:8px 10px;margin-bottom:4px;"><b style="color:var(--red);">必须戒烟:</b> 脂肪肝+抽烟→加速肝损伤 | 高血脂+抽烟→心血管风险翻倍</div>
+第1-2周: 每天减3-5根 → 第3-4周: 不超过5根 → 第5周: 完全戒断
+</div></div>
+<div class="card"><div class="card-title">🔬 指标改善策略</div><div style="font-size:10px;color:var(--text2);line-height:1.9;">
+🔴 脂肪肝+转氨酶高 → 戒酒戒烟·低脂·减重·有氧<br>
+🔴 高甘油三酯+高胆固醇 → 严格低脂·膳食纤维·有氧<br>
+🟡 高尿酸+肾结石 → 日饮水2500ml·避高嘌呤高草酸<br>
+🟡 甲状腺抗体异常 → 甲功正常暂不治疗·定期监测<br>
+⚪ 胆囊息肉3mm → 控血脂·低脂·不跳早餐<br>
+⚪ 颈椎钙化 → 避免低头·颈椎操·游泳
+</div></div>
+</div>
+
+<!-- 复查页 -->
+<div class="page" id="page-review">
+<div class="top-bar"><h2>📅 复查提醒</h2><div class="date">定期监测</div></div>
+<div class="card"><div class="card-title">📋 每3个月</div><div style="font-size:10px;color:var(--text2);line-height:2;">🩸 血脂四项(TC·TG·HDL-C·LDL-C)<br>🫀 肝功能(ALT·AST·GGT)<br>💎 尿酸UA(目标<400)</div></div>
+<div class="card"><div class="card-title">📋 每6个月</div><div style="font-size:10px;color:var(--text2);line-height:2;">🦋 甲状腺功能(FT3·FT4·TSH·TPOAb·TgAb)<br>🔍 腹部B超(肝脏+胆囊+肾脏)</div></div>
+<div class="card"><div class="card-title">📋 每12个月</div><div style="font-size:10px;color:var(--text2);line-height:2;">🏥 甲状腺B超(观察2mm结节)<br>📊 全面体检</div></div>
+<div class="card"><div class="card-title">🚨 需立即就医</div><div style="font-size:10px;color:var(--text2);line-height:2;">• 3月后TG仍>2.3→需药物<br>• 肾结石增大/腰痛/血尿<br>• 甲功异常(疲劳/怕冷)<br>• 胆囊息肉>10mm<br>• 关节红肿(痛风)</div></div>
+<div class="card"><div class="card-title">📈 预期改善</div><div style="font-size:10px;color:var(--text2);line-height:2;">
+<b style="color:var(--warn);">3个月:</b> 体重→72kg·TG<2.0·ALT<50·脂肪肝→轻度<br>
+<b style="color:var(--green);">6个月:</b> 体重→68-70kg·各项指标正常·脂肪肝可能消退
+</div></div>
+</div>
+
+<p style="font-size:8px;color:var(--text2);text-align:center;padding:16px;opacity:0.4;">⚠️ 仅供健康管理参考，不能替代医生诊断</p>
+
+<!-- 戒烟弹窗 -->
+<div id="smokeModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;">
+<div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;width:280px;text-align:center;">
+<h4 id="smokeModalTitle" style="color:var(--cyan);margin-bottom:10px;font-size:13px;">设置戒烟日期</h4>
+<input type="date" id="smokeModalDate" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.05);color:#fff;font-size:13px;text-align:center;margin-bottom:10px;">
+<p id="smokeModalMsg" style="font-size:10px;color:var(--text2);margin-bottom:10px;display:none;"></p>
+<div style="display:flex;gap:6px;justify-content:center;">
+<button onclick="closeSmokeModal()" style="padding:7px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:var(--text2);font-size:11px;cursor:pointer;">取消</button>
+<button onclick="confirmSmokeModal()" style="padding:7px 16px;border-radius:12px;border:1px solid rgba(0,194,255,0.4);background:transparent;color:var(--cyan);font-size:11px;cursor:pointer;">确认</button>
+</div>
+</div>
+</div>
+
+<!-- 底部导航 -->
+<div class="nav">
+<div class="nav-item active" onclick="switchPage('home')"><div class="icon">📊</div><div class="label">仪表盘</div></div>
+<div class="nav-item" onclick="switchPage('checkin')"><div class="icon">✅</div><div class="label">打卡</div></div>
+<div class="nav-item" onclick="switchPage('plan')"><div class="icon">📋</div><div class="label">方案</div></div>
+<div class="nav-item" onclick="switchPage('review')"><div class="icon">📅</div><div class="label">复查</div></div>
+</div>
+</div><!-- end main-app -->
+</div><!-- end app -->
+
+<script>
+var isAdmin=false,ADMIN_PWD='biaoge666',appData={};
+function saveData(){localStorage.setItem('hg_data',JSON.stringify(appData));}
+function loadStore(){try{return JSON.parse(localStorage.getItem('hg_data'))||{};}catch(e){return {};}}
+function getToday(){return new Date().toISOString().slice(0,10);}
+
+function enterApp(){
+  document.getElementById('coverPage').classList.add('hidden');
+  document.getElementById('loginOverlay').classList.remove('hidden');
+}
+function doLogin(){
+  var pwd=document.getElementById('loginPwd').value;
+  if(pwd===ADMIN_PWD){isAdmin=true;localStorage.setItem('hg_admin','1');document.getElementById('loginOverlay').classList.add('hidden');startApp();}
+  else{document.getElementById('loginErr').textContent='❌ 密码错误';}
+}
+function skipLogin(){isAdmin=false;document.getElementById('loginOverlay').classList.add('hidden');startApp();}
+function doLogout(){isAdmin=false;localStorage.removeItem('hg_admin');location.reload();}
+
+// 自动登录
+if(localStorage.getItem('hg_admin')==='1'){
+  isAdmin=true;
+  document.getElementById('coverPage').classList.add('hidden');
+  document.getElementById('loginOverlay').classList.add('hidden');
+  document.addEventListener('DOMContentLoaded',startApp);
+}
+
+function startApp(){
+  document.getElementById('mainApp').classList.add('show');
+  appData=loadStore();
+  if(!appData.checkins)appData.checkins={};
+  if(!appData.water)appData.water={};
+  if(!appData.weightLog)appData.weightLog=[];
+  updateDate();updateUI();renderCheckins();renderWater();renderSmoke();renderWeight();animateScore();
+}
+
+function updateDate(){
+  var d=new Date(),days=['日','一','二','三','四','五','六'];
+  document.getElementById('todayDate').textContent=(d.getMonth()+1)+'月'+d.getDate()+'日 周'+days[d.getDay()];
+}
+
+function updateUI(){
+  var badge=document.getElementById('roleBadge'),lb=document.getElementById('logoutBtn'),sb=document.getElementById('smokeBtns'),rn=document.getElementById('readonlyNotice');
+  if(isAdmin){
+    badge.innerHTML='<span class="admin-badge">🔑 管理员</span>';lb.style.display='inline-block';sb.style.display='flex';rn.style.display='none';
+    document.querySelectorAll('.checkin-item').forEach(function(el){el.style.opacity='1';el.onclick=function(){toggleCheckin(this);};});
+  }else{
+    badge.innerHTML='<span class="viewer-badge">👀 访客</span>';lb.style.display='none';sb.style.display='none';rn.style.display='block';
+    document.querySelectorAll('.checkin-item').forEach(function(el){el.style.opacity='0.6';el.onclick=null;});
+  }
+}
+
+function switchPage(name){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
+  var page=document.getElementById('page-'+name);if(page)page.classList.add('active');
+  var navs=document.querySelectorAll('.nav-item'),map={home:0,checkin:1,plan:2,review:3};
+  if(map[name]!==undefined&&navs[map[name]])navs[map[name]].classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function animateScore(){
+  var target=42,circle=document.getElementById('scoreCircle'),num=document.getElementById('scoreNum');
+  var circ=2*Math.PI*55;circle.style.strokeDasharray=circ;
+  setTimeout(function(){circle.style.strokeDashoffset=circ-(target/100)*circ;},300);
+  var cur=0,t=setInterval(function(){cur++;num.textContent=cur;if(cur>=target)clearInterval(t);},30);
+}
+
+function renderCheckins(){
+  var today=getToday(),td=(appData.checkins&&appData.checkins[today])||{};
+  document.querySelectorAll('.checkin-item').forEach(function(el){
+    var key=el.getAttribute('data-key');
+    if(td[key]){el.style.borderColor='rgba(46,213,115,0.3)';el.innerHTML=el.innerHTML.replace(/<div class="ck">.*?<\/div>/,'')+'<div class="ck" style="position:absolute;top:6px;right:8px;color:#2ed573;font-size:12px;font-weight:bold;">✓</div>';}
+    else{el.style.borderColor='rgba(0,194,255,0.12)';el.innerHTML=el.innerHTML.replace(/<div class="ck">.*?<\/div>/,'');}
+  });
+  var streak=0,d=new Date();
+  for(var i=0;i<365;i++){var k=d.toISOString().slice(0,10);var dd=(appData.checkins&&appData.checkins[k])||{};if(Object.keys(dd).length>0)streak++;else if(i>0)break;d.setDate(d.getDate()-1);}
+  document.getElementById('streakInfo').textContent='连续打卡 '+streak+' 天';
+}
+
+function toggleCheckin(el){
+  if(!isAdmin)return;var key=el.getAttribute('data-key'),today=getToday();
+  if(!appData.checkins[today])appData.checkins[today]={};
+  if(appData.checkins[today][key])delete appData.checkins[today][key];
+  else appData.checkins[today][key]=Date.now();
+  saveData();renderCheckins();
+}
+
+function renderWater(){
+  var today=getToday(),filled=(appData.water&&appData.water[today])||0;
+  var cups=document.getElementById('waterCups');cups.innerHTML='';
+  for(var i=0;i<8;i++){
+    var c=document.createElement('div');
+    c.style.cssText='width:28px;height:28px;border-radius:6px;border:1px solid rgba(0,194,255,0.2);display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;transition:all .3s;';
+    if(i<filled){c.style.background='rgba(0,194,255,0.15)';c.style.borderColor='rgba(0,194,255,0.4)';}
+    c.textContent='💧';c.setAttribute('data-idx',i);
+    if(isAdmin){c.onclick=function(){var idx=parseInt(this.getAttribute('data-idx'));var cur=(appData.water&&appData.water[getToday()])||0;appData.water[getToday()]=idx<cur?idx:idx+1;saveData();renderWater();};}
+    cups.appendChild(c);
+  }
+  var amt=filled*300;document.getElementById('waterAmt').textContent=amt;
+  document.getElementById('waterBar').style.width=Math.min(100,amt/2500*100)+'%';
+}
+
+var smokeMode='';
+function showSmokeModal(mode){
+  if(!isAdmin)return;smokeMode=mode;
+  var m=document.getElementById('smokeModal'),d=document.getElementById('smokeModalDate'),msg=document.getElementById('smokeModalMsg'),t=document.getElementById('smokeModalTitle');
+  msg.style.display='none';d.style.display='block';
+  if(mode==='setdate'){t.textContent='📅 设置戒烟开始日期';d.value=appData.smokeQuitDate||getToday();}
+  else{t.textContent='😔 记录破戒';d.style.display='none';msg.style.display='block';msg.textContent='破戒不可怕，重新开始就好。';}
+  m.style.display='flex';
+}
+function closeSmokeModal(){document.getElementById('smokeModal').style.display='none';}
+function confirmSmokeModal(){
+  if(smokeMode==='setdate'){var v=document.getElementById('smokeModalDate').value;if(v){appData.smokeQuitDate=v;if(!appData.smokeHistory)appData.smokeHistory=[];appData.smokeHistory.push({type:'start',date:v,ts:Date.now()});}}
+  else{var today=getToday();if(!appData.smokeHistory)appData.smokeHistory=[];appData.smokeHistory.push({type:'relapse',date:today,ts:Date.now()});appData.smokeQuitDate=today;}
+  saveData();renderSmoke();closeSmokeModal();
+}
+
+function renderSmoke(){
+  var start=appData.smokeQuitDate,days=0;
+  if(start){days=Math.floor((new Date()-new Date(start))/(864e5));if(days<0)days=0;}
+  document.getElementById('smokeDays').textContent=days;
+  document.getElementById('smokeMoney').textContent='¥'+(days*25);
+  document.getElementById('smokeLife').textContent=Math.floor(days*20*11/60)+'h';
+  document.getElementById('smokeCigs').textContent=days*20;
+  var ms=[{d:1,l:'1天'},{d:3,l:'3天'},{d:7,l:'1周'},{d:14,l:'2周'},{d:30,l:'1月'},{d:60,l:'2月'},{d:90,l:'3月'},{d:180,l:'半年'},{d:365,l:'1年'}];
+  var b=document.getElementById('smokeBadges');if(b){b.innerHTML='';ms.forEach(function(m){
+    var s=document.createElement('span');s.style.cssText='padding:2px 8px;border-radius:10px;font-size:9px;border:1px solid '+(days>=m.d?'rgba(46,213,115,0.3)':'rgba(255,255,255,0.1)')+';color:'+(days>=m.d?'#2ed573':'rgba(224,232,240,0.5)')+';'+(days>=m.d?'background:rgba(46,213,115,0.08);':'');
+    s.textContent=(days>=m.d?'✅ ':'🔒 ')+m.l;b.appendChild(s);
+  });}
+}
+
+function renderWeight(){
+  var log=appData.weightLog||[],latest=log.length>0?log[log.length-1].weight:79.9;
+  document.getElementById('currentWeight').textContent=latest+' kg';
+  document.getElementById('weightLeft').textContent='~'+Math.max(0,latest-69).toFixed(1)+'kg';
+  var p=Math.min(100,((79.9-latest)/(79.9-68))*100);if(p<0)p=0;
+  document.getElementById('weightBar').style.width=p+'%';
+}
+
+// PWA Service Worker
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}
+</script>
+</body>
+</html>
