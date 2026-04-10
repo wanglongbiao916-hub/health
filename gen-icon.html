@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>下载图标</title></head>
+<body style="background:#222;color:#fff;text-align:center;padding:40px;font-family:sans-serif;">
+<h2>点击下方按钮下载图标</h2>
+<p style="color:#aaa;margin:10px 0;">下载后把 icon.png 和其他文件一起上传到 GitHub</p>
+<canvas id="cv" width="180" height="180" style="margin:20px;border-radius:40px;border:2px solid #444;"></canvas>
+<br>
+<button onclick="dl()" style="padding:12px 30px;font-size:16px;border-radius:10px;border:none;background:#00c2ff;color:#000;font-weight:bold;cursor:pointer;">下载 icon.png</button>
+<script>
+var c=document.getElementById('cv'),ctx=c.getContext('2d'),s=180;
+var g=ctx.createLinearGradient(0,0,s,s);g.addColorStop(0,'#060b1a');g.addColorStop(1,'#0c1a3a');
+ctx.fillStyle=g;ctx.fillRect(0,0,s,s);
+ctx.beginPath();ctx.arc(s/2,s*0.38,s*0.24,0,Math.PI*2);ctx.strokeStyle='rgba(0,194,255,0.25)';ctx.lineWidth=1.5;ctx.stroke();
+var cy=s*0.38;
+ctx.beginPath();ctx.moveTo(s*0.12,cy);ctx.lineTo(s*0.33,cy);ctx.lineTo(s*0.39,cy-s*0.1);ctx.lineTo(s*0.44,cy+s*0.08);ctx.lineTo(s*0.50,cy-s*0.15);ctx.lineTo(s*0.56,cy+s*0.1);ctx.lineTo(s*0.61,cy);ctx.lineTo(s*0.88,cy);
+ctx.strokeStyle='#00c2ff';ctx.lineWidth=s*0.025;ctx.lineCap='round';ctx.lineJoin='round';
+ctx.shadowColor='#00c2ff';ctx.shadowBlur=10;ctx.stroke();ctx.shadowBlur=0;
+ctx.fillStyle='#ffffff';ctx.font='bold '+(s*0.16)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('标哥',s/2,s*0.68);
+ctx.fillStyle='rgba(0,194,255,0.7)';ctx.font='600 '+(s*0.07)+'px sans-serif';ctx.fillText('HEALTH',s/2,s*0.85);
+function dl(){var a=document.createElement('a');a.download='icon.png';a.href=c.toDataURL('image/png');a.click();}
+</script>
+</body>
+</html>
