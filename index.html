@@ -317,10 +317,78 @@ body{font-family:-apple-system,"SF Pro Display","Microsoft YaHei","PingFang SC",
 </div>
 </div>
 
+<!-- 饮食拍照页 -->
+<div class="page" id="page-food">
+<div class="top-bar"><h2>📸 饮食记录</h2><div class="date" id="foodDate"></div></div>
+<div class="card" style="text-align:center;">
+<div class="card-title">📷 拍照识别食物</div>
+<div id="foodAdminOnly" style="display:none;">
+<input type="file" id="foodCamera" accept="image/*" capture="environment" style="display:none;" onchange="handleFoodPhoto(this)">
+<div onclick="document.getElementById('foodCamera').click()" style="border:2px dashed rgba(0,194,255,0.3);border-radius:14px;padding:30px;cursor:pointer;margin-bottom:10px;">
+<div style="font-size:40px;margin-bottom:8px;">📷</div>
+<div style="font-size:12px;color:var(--cyan);">点击拍照或选择照片</div>
+<div style="font-size:10px;color:var(--text2);margin-top:4px;">AI将自动识别食物并估算热量</div>
+</div>
+<img id="foodPreview" style="display:none;max-width:100%;border-radius:10px;margin-bottom:10px;">
+<div id="foodAnalyzing" style="display:none;padding:16px;color:var(--cyan);font-size:12px;">
+<div style="font-size:24px;animation:pulse 1s infinite;">🔍</div>
+AI正在分析食物...
+</div>
+<div id="foodResult" style="display:none;text-align:left;"></div>
+</div>
+<div id="foodViewerNotice" style="display:none;padding:16px;font-size:11px;color:var(--warn);">👀 访客模式无法拍照记录</div>
+</div>
+
+<div class="card">
+<div class="card-title">📊 今日摄入统计</div>
+<div style="display:flex;justify-content:space-around;text-align:center;margin-bottom:10px;">
+<div><div id="foodTotalCal" style="font-size:24px;font-weight:700;color:var(--cyan);">0</div><div style="font-size:9px;color:var(--text2);">总热量 kcal</div></div>
+<div><div id="foodTotalProtein" style="font-size:24px;font-weight:700;color:var(--green);">0</div><div style="font-size:9px;color:var(--text2);">蛋白质 g</div></div>
+<div><div id="foodTotalFat" style="font-size:24px;font-weight:700;color:var(--warn);">0</div><div style="font-size:9px;color:var(--text2);">脂肪 g</div></div>
+</div>
+<div class="progress-bar"><div class="progress-fill" id="calBar" style="width:0%;"></div></div>
+<div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text2);margin-top:3px;">
+<span>0 kcal</span><span id="calTarget">目标 1500 kcal</span>
+</div>
+</div>
+
+<div class="card">
+<div class="card-title">🍽️ 今日饮食记录</div>
+<div id="foodLog" style="font-size:11px;color:var(--text2);"></div>
+</div>
+</div>
+
+<!-- 提醒页 -->
+<div class="page" id="page-alarm">
+<div class="top-bar"><h2>⏰ 健康提醒</h2><div class="date">APP打开时自动提醒</div></div>
+<div class="alert-banner"><span class="alert-icon">📢</span><div>APP打开期间，到了设定时间会弹出提醒+震动。可自定义开关每条提醒。</div></div>
+
+<div class="card">
+<div class="card-title">🔔 提醒开关</div>
+<div id="alarmList"></div>
+</div>
+
+<div class="card">
+<div class="card-title">📊 今日提醒记录</div>
+<div id="alarmLog" style="font-size:10px;color:var(--text2);line-height:2;"></div>
+</div>
+</div>
+
+<!-- 提醒弹窗 -->
+<div id="alarmPopup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:250;align-items:center;justify-content:center;">
+<div style="background:var(--card);border:2px solid var(--cyan);border-radius:18px;padding:28px 24px;width:300px;text-align:center;animation:fadeIn .3s ease;">
+<div id="alarmPopupIcon" style="font-size:48px;margin-bottom:10px;"></div>
+<div id="alarmPopupTime" style="font-size:24px;font-weight:800;color:var(--cyan);margin-bottom:4px;"></div>
+<div id="alarmPopupMsg" style="font-size:14px;color:var(--text);margin-bottom:16px;line-height:1.6;"></div>
+<button onclick="dismissAlarm()" style="padding:10px 36px;border-radius:14px;border:1px solid rgba(0,194,255,0.4);background:rgba(0,194,255,0.1);color:var(--cyan);font-size:13px;font-weight:600;cursor:pointer;">知道了</button>
+</div>
+</div>
+
 <!-- 底部导航 -->
 <div class="nav">
-<div class="nav-item active" onclick="switchPage('home')"><div class="icon">📊</div><div class="label">仪表盘</div></div>
+<div class="nav-item active" onclick="switchPage('home')"><div class="icon">📊</div><div class="label">首页</div></div>
 <div class="nav-item" onclick="switchPage('checkin')"><div class="icon">✅</div><div class="label">打卡</div></div>
+<div class="nav-item" onclick="switchPage('food')"><div class="icon">📸</div><div class="label">饮食</div></div>
 <div class="nav-item" onclick="switchPage('plan')"><div class="icon">📋</div><div class="label">方案</div></div>
 <div class="nav-item" onclick="switchPage('review')"><div class="icon">📅</div><div class="label">复查</div></div>
 </div>
@@ -359,7 +427,7 @@ function startApp(){
   if(!appData.checkins)appData.checkins={};
   if(!appData.water)appData.water={};
   if(!appData.weightLog)appData.weightLog=[];
-  updateDate();updateUI();renderCheckins();renderWater();renderSmoke();renderWeight();animateScore();
+  updateDate();updateUI();renderCheckins();renderWater();renderSmoke();renderWeight();animateScore();initAlarms();initFood();
 }
 
 function updateDate(){
@@ -382,7 +450,7 @@ function switchPage(name){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
   var page=document.getElementById('page-'+name);if(page)page.classList.add('active');
-  var navs=document.querySelectorAll('.nav-item'),map={home:0,checkin:1,plan:2,review:3};
+  var navs=document.querySelectorAll('.nav-item'),map={home:0,checkin:1,food:2,plan:3,review:4};
   if(map[name]!==undefined&&navs[map[name]])navs[map[name]].classList.add('active');
   window.scrollTo(0,0);
 }
@@ -465,6 +533,265 @@ function renderWeight(){
   document.getElementById('weightLeft').textContent='~'+Math.max(0,latest-69).toFixed(1)+'kg';
   var p=Math.min(100,((79.9-latest)/(79.9-68))*100);if(p<0)p=0;
   document.getElementById('weightBar').style.width=p+'%';
+}
+
+// ===== 提醒系统 =====
+var ALARMS=[
+  {id:'wake',time:'07:00',icon:'⏰',msg:'起床啦！喝300ml温水开启新的一天',cat:'作息'},
+  {id:'breakfast',time:'07:15',icon:'🍳',msg:'该吃早餐了！全麦面包+水煮蛋+脱脂牛奶',cat:'饮食'},
+  {id:'water1',time:'09:00',icon:'💧',msg:'该喝水了！目标2500ml，促进尿酸排泄',cat:'饮水'},
+  {id:'snack1',time:'10:00',icon:'🍎',msg:'加餐时间！吃个苹果或低糖酸奶，起身活动5分钟',cat:'饮食'},
+  {id:'water2',time:'11:00',icon:'💧',msg:'喝水提醒！保持饮水节奏',cat:'饮水'},
+  {id:'lunch',time:'12:00',icon:'🥗',msg:'午餐时间！七分饱，少盐少油，饭后散步15分钟',cat:'饮食'},
+  {id:'water3',time:'14:00',icon:'💧',msg:'下午喝水！别忘了补水',cat:'饮水'},
+  {id:'snack2',time:'15:30',icon:'🍐',msg:'加餐+起身活动！梨半个或无糖豆浆',cat:'饮食'},
+  {id:'water4',time:'16:00',icon:'💧',msg:'喝水提醒！今天喝够2500ml了吗？',cat:'饮水'},
+  {id:'dinner',time:'18:00',icon:'🌙',msg:'晚餐时间！六分饱，20:00后不再进食',cat:'饮食'},
+  {id:'exercise',time:'19:00',icon:'🏃',msg:'运动时间到！40-60分钟有氧运动，心率120-140',cat:'运动'},
+  {id:'water5',time:'20:00',icon:'💧',msg:'运动后补水！今天不要再吃东西了',cat:'饮水'},
+  {id:'home',time:'22:00',icon:'🏠',msg:'到家了吧？洗漱放松，准备休息',cat:'作息'},
+  {id:'neck',time:'22:30',icon:'🧘',msg:'颈椎拉伸操时间！10分钟，改善颈椎钙化',cat:'运动'},
+  {id:'sleep',time:'23:00',icon:'😴',msg:'该睡觉了！保证8小时睡眠，肝脏修复需要充足休息',cat:'作息'}
+];
+var alarmFired={};
+
+function initAlarms(){
+  if(!appData.alarmSettings)appData.alarmSettings={};
+  // 默认全部开启
+  ALARMS.forEach(function(a){if(appData.alarmSettings[a.id]===undefined)appData.alarmSettings[a.id]=true;});
+  renderAlarmList();
+  renderAlarmLog();
+  // 每30秒检查一次
+  setInterval(checkAlarms,30000);
+  checkAlarms();
+}
+
+function renderAlarmList(){
+  var list=document.getElementById('alarmList');if(!list)return;
+  list.innerHTML='';
+  ALARMS.forEach(function(a){
+    var on=appData.alarmSettings[a.id]!==false;
+    var div=document.createElement('div');
+    div.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03);';
+    div.innerHTML='<div style="display:flex;align-items:center;gap:8px;"><span style="font-size:18px;">'+a.icon+'</span><div><div style="font-size:11px;color:#fff;">'+a.time+' '+a.msg.split('！')[0]+'</div><div style="font-size:9px;color:var(--text2);">'+a.cat+'</div></div></div>'
+      +'<div onclick="toggleAlarm(\''+a.id+'\')" style="width:40px;height:22px;border-radius:11px;cursor:pointer;transition:all .3s;background:'+(on?'rgba(0,194,255,0.3)':'rgba(255,255,255,0.1)')+';position:relative;"><div style="width:18px;height:18px;border-radius:50%;background:'+(on?'#00c2ff':'#555')+';position:absolute;top:2px;'+(on?'right:2px':'left:2px')+';transition:all .3s;"></div></div>';
+    list.appendChild(div);
+  });
+}
+
+function toggleAlarm(id){
+  if(!isAdmin)return;
+  appData.alarmSettings[id]=!appData.alarmSettings[id];
+  saveData();renderAlarmList();
+}
+
+function checkAlarms(){
+  var now=new Date();
+  var hm=('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2);
+  var today=getToday();
+  ALARMS.forEach(function(a){
+    if(appData.alarmSettings[a.id]===false)return;
+    var firedKey=today+'_'+a.id;
+    if(alarmFired[firedKey])return;
+    if(hm===a.time){
+      alarmFired[firedKey]=true;
+      showAlarmPopup(a);
+      logAlarm(a);
+    }
+  });
+}
+
+function showAlarmPopup(a){
+  document.getElementById('alarmPopupIcon').textContent=a.icon;
+  document.getElementById('alarmPopupTime').textContent=a.time;
+  document.getElementById('alarmPopupMsg').textContent=a.msg;
+  document.getElementById('alarmPopup').style.display='flex';
+  // 震动
+  if(navigator.vibrate)navigator.vibrate([200,100,200,100,200]);
+  // 声音
+  try{var ctx=new(window.AudioContext||window.webkitAudioContext)();var o=ctx.createOscillator();var g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=800;g.gain.value=0.3;o.start();setTimeout(function(){o.stop();},500);}catch(e){}
+}
+
+function dismissAlarm(){document.getElementById('alarmPopup').style.display='none';}
+
+function logAlarm(a){
+  if(!appData.alarmLogs)appData.alarmLogs={};
+  var today=getToday();
+  if(!appData.alarmLogs[today])appData.alarmLogs[today]=[];
+  appData.alarmLogs[today].push({id:a.id,time:a.time,icon:a.icon,ts:Date.now()});
+  saveData();renderAlarmLog();
+}
+
+function renderAlarmLog(){
+  var el=document.getElementById('alarmLog');if(!el)return;
+  var today=getToday(),logs=(appData.alarmLogs&&appData.alarmLogs[today])||[];
+  if(logs.length===0){el.innerHTML='<div style="text-align:center;color:var(--text2);padding:10px;">今天还没有提醒记录</div>';return;}
+  el.innerHTML='';
+  logs.forEach(function(l){
+    var d=new Date(l.ts);
+    var timeStr=('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
+    el.innerHTML+='<div>'+l.icon+' '+timeStr+' - 已提醒</div>';
+  });
+}
+
+// ===== 饮食拍照分析 =====
+var DOUBAO_KEY = '6884ebc2-978c-42e3-91b4-8bb69675c5e9';
+var DOUBAO_MODEL = 'doubao-1.5-vision-pro';
+var DOUBAO_URL = 'https://ark.cn-beijing.volces.com/api/v3/chat/completions';
+
+function initFood() {
+  if (isAdmin) {
+    document.getElementById('foodAdminOnly').style.display = 'block';
+    document.getElementById('foodViewerNotice').style.display = 'none';
+  } else {
+    document.getElementById('foodAdminOnly').style.display = 'none';
+    document.getElementById('foodViewerNotice').style.display = 'block';
+  }
+  var d = new Date();
+  document.getElementById('foodDate').textContent = (d.getMonth()+1) + '/' + d.getDate();
+  renderFoodLog();
+}
+
+function handleFoodPhoto(input) {
+  if (!input.files || !input.files[0]) return;
+  var file = input.files[0];
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = document.getElementById('foodPreview');
+    img.src = e.target.result;
+    img.style.display = 'block';
+    document.getElementById('foodAnalyzing').style.display = 'block';
+    document.getElementById('foodResult').style.display = 'none';
+    analyzeFoodImage(e.target.result);
+  };
+  reader.readAsDataURL(file);
+}
+
+function analyzeFoodImage(base64Data) {
+  var imageContent = base64Data.split(',')[1];
+  var mimeType = base64Data.split(';')[0].split(':')[1];
+
+  var body = {
+    model: DOUBAO_MODEL,
+    messages: [{
+      role: 'user',
+      content: [
+        {
+          type: 'text',
+          text: 'Please analyze this food photo. Return ONLY a JSON object (no markdown, no code blocks) with this exact format: {"foods":[{"name":"food name in Chinese","amount":"estimated amount","calories":number,"protein":number,"fat":number,"carbs":number}],"total_calories":number,"total_protein":number,"total_fat":number,"total_carbs":number,"advice":"brief health advice in Chinese based on this person having fatty liver, high triglycerides, high uric acid, and kidney stones"}'
+        },
+        {
+          type: 'image_url',
+          image_url: { url: base64Data }
+        }
+      ]
+    }],
+    max_tokens: 1000
+  };
+
+  fetch(DOUBAO_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + DOUBAO_KEY
+    },
+    body: JSON.stringify(body)
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    document.getElementById('foodAnalyzing').style.display = 'none';
+    if (data.choices && data.choices[0]) {
+      var text = data.choices[0].message.content;
+      // Try to parse JSON from response
+      try {
+        // Remove markdown code blocks if present
+        text = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+        var result = JSON.parse(text);
+        showFoodResult(result);
+        saveFoodRecord(result);
+      } catch(e) {
+        document.getElementById('foodResult').style.display = 'block';
+        document.getElementById('foodResult').innerHTML = '<div style="padding:10px;background:rgba(0,194,255,0.06);border-radius:10px;font-size:11px;color:var(--text);line-height:1.8;">' + text + '</div>';
+      }
+    } else {
+      var errMsg = (data.error && data.error.message) || JSON.stringify(data);
+      document.getElementById('foodResult').style.display = 'block';
+      document.getElementById('foodResult').innerHTML = '<div style="color:var(--red);font-size:11px;">Analysis failed: ' + errMsg + '</div>';
+    }
+  })
+  .catch(function(err) {
+    document.getElementById('foodAnalyzing').style.display = 'none';
+    document.getElementById('foodResult').style.display = 'block';
+    document.getElementById('foodResult').innerHTML = '<div style="color:var(--red);font-size:11px;">Network error: ' + err.message + '</div>';
+  });
+}
+
+function showFoodResult(result) {
+  var html = '<div style="background:rgba(0,194,255,0.06);border-radius:10px;padding:12px;margin-bottom:8px;">';
+  html += '<div style="font-size:12px;color:var(--cyan);margin-bottom:8px;font-weight:600;">AI Analysis Result</div>';
+  if (result.foods) {
+    result.foods.forEach(function(f) {
+      html += '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:11px;">';
+      html += '<span style="color:var(--text);">' + f.name + ' ' + (f.amount||'') + '</span>';
+      html += '<span style="color:var(--cyan);font-weight:600;">' + f.calories + ' kcal</span>';
+      html += '</div>';
+    });
+  }
+  html += '<div style="display:flex;justify-content:space-around;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.05);font-size:10px;">';
+  html += '<span style="color:var(--cyan);">' + (result.total_calories||0) + ' kcal</span>';
+  html += '<span style="color:var(--green);">P:' + (result.total_protein||0) + 'g</span>';
+  html += '<span style="color:var(--warn);">F:' + (result.total_fat||0) + 'g</span>';
+  html += '<span style="color:var(--purple);">C:' + (result.total_carbs||0) + 'g</span>';
+  html += '</div></div>';
+  if (result.advice) {
+    html += '<div style="background:rgba(255,177,66,0.06);border-left:3px solid var(--warn);border-radius:0 10px 10px 0;padding:10px;font-size:10px;color:var(--text2);line-height:1.8;">' + result.advice + '</div>';
+  }
+  document.getElementById('foodResult').style.display = 'block';
+  document.getElementById('foodResult').innerHTML = html;
+}
+
+function saveFoodRecord(result) {
+  var today = getToday();
+  if (!appData.foodLog) appData.foodLog = {};
+  if (!appData.foodLog[today]) appData.foodLog[today] = [];
+  appData.foodLog[today].push({
+    ts: Date.now(),
+    foods: result.foods || [],
+    total_calories: result.total_calories || 0,
+    total_protein: result.total_protein || 0,
+    total_fat: result.total_fat || 0,
+    total_carbs: result.total_carbs || 0
+  });
+  saveData();
+  renderFoodLog();
+}
+
+function renderFoodLog() {
+  var today = getToday();
+  var logs = (appData.foodLog && appData.foodLog[today]) || [];
+  var totalCal = 0, totalP = 0, totalF = 0;
+  logs.forEach(function(l) { totalCal += l.total_calories||0; totalP += l.total_protein||0; totalF += l.total_fat||0; });
+
+  document.getElementById('foodTotalCal').textContent = totalCal;
+  document.getElementById('foodTotalProtein').textContent = totalP;
+  document.getElementById('foodTotalFat').textContent = totalF;
+  document.getElementById('calBar').style.width = Math.min(100, totalCal/1500*100) + '%';
+
+  var logEl = document.getElementById('foodLog');
+  if (logs.length === 0) {
+    logEl.innerHTML = '<div style="text-align:center;padding:10px;color:var(--text2);">No records today</div>';
+    return;
+  }
+  var html = '';
+  logs.forEach(function(l) {
+    var d = new Date(l.ts);
+    var time = ('0'+d.getHours()).slice(-2) + ':' + ('0'+d.getMinutes()).slice(-2);
+    html += '<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.03);">';
+    html += '<div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="color:var(--cyan);font-weight:600;">' + time + '</span><span style="color:var(--cyan);">' + l.total_calories + ' kcal</span></div>';
+    if (l.foods) { l.foods.forEach(function(f) { html += '<div style="font-size:10px;color:var(--text2);">' + f.name + ' ' + (f.amount||'') + ' - ' + f.calories + 'kcal</div>'; }); }
+    html += '</div>';
+  });
+  logEl.innerHTML = html;
 }
 
 // PWA Service Worker
